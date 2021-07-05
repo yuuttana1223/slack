@@ -1,4 +1,52 @@
-.left-content {
-  background-color: #3f0e40;
-  color: rgb(207, 195, 207);
+* {
+  margin: 0;
+  padding: 0;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
 }
+
+.container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  height: 100vh;
+}
+
+.container .left-content {
+  width: 15vw;
+  background-color: #3f0e40;
+  padding: 20px;
+}
+
+.container .left-content .link {
+  display: block;
+  text-decoration: none;
+  padding: 5px;
+}
+
+.container .left-content .link:hover {
+  background-color: #2b032c;
+}
+
+.container .left-content .link span {
+  color: #cfc3cf;
+}
+
+.container .right-content {
+  width: 100%;
+  padding: 15px;
+}
+
+.container .right-content .messages p {
+  padding: 10px;
+}
+
+.container .right-content form input {
+  width: 95%;
+  padding: 10px;
+}
+
+.container .right-content form button {
+  padding: 10px;
+}
+/*# sourceMappingURL=style.css.map */

@@ -1,0 +1,49 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+
+  .left-content {
+    width: 15vw;
+    background-color: #3f0e40;
+    padding: 20px;
+
+    .link {
+      display: block;
+      text-decoration: none;
+      padding: 5px;
+      &:hover {
+        background-color: #2b032c;
+      }
+      span {
+        color: rgb(207, 195, 207);
+      }
+    }
+  }
+
+  .right-content {
+    width: 100%;
+    padding: 15px;
+
+    .messages {
+      p {
+        padding: 10px;
+      }
+    }
+
+    form {
+      input {
+        width: 95%;
+        padding: 10px;
+      }
+      button {
+        padding: 10px;
+      }
+    }
+  }
+}

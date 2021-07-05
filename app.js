@@ -17,10 +17,10 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  console.log("a user connected");
+  socket.on("disconnect", () => {});
 
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
+  socket.on("chat message", (message) => {
+    io.emit("chat message", message);
   });
 });
 
