@@ -21,15 +21,12 @@
 .container .left-content .link {
   display: block;
   text-decoration: none;
+  color: #cfc3cf;
   padding: 5px;
 }
 
 .container .left-content .link:hover {
   background-color: #2b032c;
-}
-
-.container .left-content .link span {
-  color: #cfc3cf;
 }
 
 .container .right-content {

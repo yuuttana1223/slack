@@ -2,17 +2,34 @@
 const socket = io();
 
 const form = document.getElementById("form-message");
+const input = document.getElementById("input-message");
 
+// 入力中を伝える
+input.addEventListener("input", () => {
+  socket.emit("start typing");
+});
+
+// メッセージを送信
 form.addEventListener("submit", (e) => {
   e.preventDefault();
-  const input = document.getElementById("input-message");
   socket.emit("chat message", input.value);
   input.value = "";
 });
 
+// メッセージを追加
 socket.on("chat message", (message) => {
-  const messages = document.querySelector(".messages");
   const newMessage = document.createElement("p");
   newMessage.textContent = message;
-  messages.appendChild(newMessage);
+  document.querySelector(".messages").appendChild(newMessage);
+});
+
+// 入力中を表示
+socket.on("start typing", () => {
+  const typingMessage = document.createElement("div");
+  typingMessage.textContent = "入力中";
+  document.querySelector(".typing").appendChild(typingMessage);
+});
+
+socket.on("stop typing", () => {
+  document.querySelector(".typing").innerHTML = "";
 });

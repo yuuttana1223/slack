@@ -16,12 +16,10 @@
     .link {
       display: block;
       text-decoration: none;
+      color: rgb(207, 195, 207);
       padding: 5px;
       &:hover {
         background-color: #2b032c;
-      }
-      span {
-        color: rgb(207, 195, 207);
       }
     }
   }
