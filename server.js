@@ -11,10 +11,6 @@ const bcrypt = require("bcrypt");
 app.use(express.static("public"));
 // ejsでpostのときに必要
 app.use(express.urlencoded({ extended: false }));
-// layout.ejsの<%-body%>内だけが変わっていく
-
-// socketで使うログインユーザー
-const currentUser = {};
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -23,13 +19,13 @@ const connection = mysql.createConnection({
   database: "slack",
 });
 
-app.use(
-  session({
-    secret: "secret",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
+const sessionMiddleware = session({
+  secret: "secret",
+  resave: false,
+  saveUninitialized: false,
+});
+app.session = sessionMiddleware;
+app.use(sessionMiddleware);
 
 app.use((req, res, next) => {
   if (req.session.userId === undefined) {
@@ -39,14 +35,6 @@ app.use((req, res, next) => {
     res.locals.isLoggedIn = true;
   }
   next();
-});
-
-app.get("/", (req, res) => {
-  if (req.session.username) {
-    res.render("top.ejs");
-  } else {
-    res.redirect("/users/signin");
-  }
 });
 
 app.get("/users/signup", (req, res) => {
@@ -113,8 +101,6 @@ app.post(
           console.log(results);
           req.session.userId = results.insertId;
           req.session.username = username;
-          currentUser.id = results.insertId;
-          currentUser.name = username;
           res.redirect("/");
         }
       );
@@ -140,8 +126,6 @@ app.post("/users/signin", (req, res) => {
           if (isEqual) {
             req.session.userId = results[0].id;
             req.session.username = results[0].name;
-            currentUser.id = results[0].id;
-            currentUser.name = results[0].name;
             res.redirect("/");
           } else {
             res.render("users/signin.ejs", {
@@ -166,18 +150,47 @@ app.post("/users/logout", (req, res) => {
   });
 });
 
+// socketで使うログインユーザー
+const currentUser = {};
+
+app.get("/", (req, res) => {
+  if (req.session.username) {
+    currentUser.name = req.session.username;
+    res.render("top.ejs");
+  } else {
+    res.redirect("/users/signin");
+  }
+});
+
+io.use((socket, next) => {
+  // セッションをsocket上で使えるようにする
+  app.session(socket.request, socket.request.res, next);
+});
+
 io.on("connection", (socket) => {
+  const { username } = socket.request.session;
+  socket.on("enter room", (roomName) => {
+    socket.roomName = roomName;
+    socket.join(socket.roomName);
+  });
+
+  socket.on("change room", (roomName) => {
+    socket.leave(socket.roomName);
+    socket.roomName = roomName;
+    socket.join(socket.roomName);
+  });
+
   socket.on("disconnect", () => {});
   // 送信されたメッセージを全員に送信
   socket.on("chat message", (message) => {
-    io.emit("chat message", message);
+    io.to(socket.roomName).emit("chat message", message);
   });
 
   // 入力中を自分以外に伝える
   let notTyping = 0; // イベントを受信した回数
   socket.on("start typing", () => {
     if (notTyping <= 0) {
-      socket.broadcast.emit("start typing", `${currentUser.name}`);
+      socket.broadcast.to(socket.roomName).emit("start typing", `${username}`);
     }
     notTyping++;
     // 3秒経っても入力がなかったら終了イベントを送信
