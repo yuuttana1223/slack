@@ -4,12 +4,14 @@
   box-sizing: border-box;
 }
 
+// top.ejs
 .container {
   display: flex;
-  height: 100vh;
+  height: 100%;
 
   .left-content {
-    width: 15vw;
+    flex: 1;
+    height: 100vh;
     background-color: #3f0e40;
     padding: 20px;
 
@@ -25,7 +27,7 @@
   }
 
   .right-content {
-    width: 100%;
+    flex: 4;
     padding: 15px;
 
     .messages {
@@ -36,10 +38,12 @@
 
     form {
       input {
-        width: 95%;
+        width: 90%;
         padding: 10px;
       }
       button {
+        background-color: white;
+        border-radius: 10px;
         padding: 10px;
       }
     }

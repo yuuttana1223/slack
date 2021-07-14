@@ -1,0 +1,28 @@
+<% if (errors.length > 0) { %>
+<ul class="errors">
+  <% errors.forEach(error => { %>
+  <li><%= error %></li>
+  <% }); %>
+</ul>
+<% } %>
+
+<h1>Sign up</h1>
+<form action="/users/signup" method="post">
+  <label>
+    <p>名前</p>
+    <input type="text" name="username" />
+  </label>
+  <label>
+    <p>メールアドレス</p>
+    <input type="email" name="email" />
+  </label>
+  <label>
+    <p>パスワード</p>
+    <input type="password" name="password" />
+  </label>
+  <label>
+    <p>パスワード確認</p>
+    <input type="password" name="password_confirmation" />
+  </label>
+  <input type="submit" value="送信" />
+</form>

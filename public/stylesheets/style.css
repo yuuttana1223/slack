@@ -9,11 +9,14 @@
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  height: 100vh;
+  height: 100%;
 }
 
 .container .left-content {
-  width: 15vw;
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+  height: 100vh;
   background-color: #3f0e40;
   padding: 20px;
 }
@@ -30,7 +33,9 @@
 }
 
 .container .right-content {
-  width: 100%;
+  -webkit-box-flex: 4;
+      -ms-flex: 4;
+          flex: 4;
   padding: 15px;
 }
 
@@ -39,11 +44,13 @@
 }
 
 .container .right-content form input {
-  width: 95%;
+  width: 90%;
   padding: 10px;
 }
 
 .container .right-content form button {
+  background-color: white;
+  border-radius: 10px;
   padding: 10px;
 }
 /*# sourceMappingURL=style.css.map */
