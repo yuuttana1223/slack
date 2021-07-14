@@ -24,9 +24,9 @@ socket.on("chat message", (message) => {
 });
 
 // 入力中を表示
-socket.on("start typing", () => {
+socket.on("start typing", (username) => {
   const typingMessage = document.createElement("div");
-  typingMessage.textContent = "入力中";
+  typingMessage.textContent = `${username}が入力中`;
   document.querySelector(".typing").appendChild(typingMessage);
 });
 
