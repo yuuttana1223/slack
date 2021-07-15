@@ -175,9 +175,16 @@ io.on("connection", (socket) => {
   });
 
   socket.on("change room", (roomName) => {
+    console.log(roomName);
     socket.leave(socket.roomName);
     socket.roomName = roomName;
     socket.join(socket.roomName);
+  });
+
+  // チャンネル新規作成
+  socket.on("create channel", (channelName) => {
+    io.emit("create channel", channelName);
+    io.to(socket.id).emit("change room", channelName);
   });
 
   socket.on("disconnect", () => {});

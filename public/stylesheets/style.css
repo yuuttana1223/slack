@@ -60,6 +60,66 @@
 .container .right-content form button {
   background-color: white;
   border-radius: 10px;
+  border: #2b032c 1px solid;
   padding: 10px;
+  cursor: pointer;
+}
+
+.container .modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: black;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.container .modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  text-align: right;
+  width: 50%;
+}
+
+.container .close {
+  width: 28px;
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.container form {
+  text-align: left;
+}
+
+.container form input {
+  margin-top: 5px;
+  width: 100%;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.container form .submit-btn {
+  text-align: right;
+}
+
+.container form .submit-btn button {
+  text-align: right;
+  border-radius: 5px;
+  padding: 5px 20px;
+  margin-top: 5px;
+  cursor: pointer;
+  background-color: #dddddd;
+}
+
+.container .close:hover,
+.container .close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
 /*# sourceMappingURL=style.css.map */
