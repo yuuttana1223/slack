@@ -3,29 +3,28 @@ const socket = io();
 
 const inputMessage = document.getElementById("input-message");
 const modal = document.getElementById("myModal");
+const channel = document.querySelector(".channel");
 
 const addEventToChannell = (channel) => {
   channel.addEventListener("click", (e) => {
-    let roomName = e.target.innerHTML.split(" ")[1];
-    // </span>が付いてきたら除去 他に良い方法はあると思う
-    roomName = roomName.indexOf("</span>") ? roomName.split("<")[0] : roomName;
-    console.log(roomName);
-    socket.emit("change room", roomName);
+    document.querySelector(".selected").classList.remove("selected");
+    e.target.classList.add("selected");
+    // 例# generalをgeneralにする
+    const channelName = e.target.textContent.split("# ")[1];
+    socket.emit("change channel", channelName);
   });
 };
 
 // 予約語(connect) 接続時
 socket.on("connect", () => {
-  socket.emit("enter room", "general");
+  channel.classList.add("selected");
+  const channelName = channel.textContent.split("# ")[1];
+  socket.emit("enter channel", channelName);
 });
 
 // 切り替えたいチャンネルの名前を送信
 document.querySelectorAll(".channel").forEach((channel) => {
   addEventToChannell(channel);
-});
-
-socket.on("change room", (channelName) => {
-  socket.emit("change room", channelName);
 });
 
 // モーダル
@@ -46,8 +45,17 @@ const inputChannell = document.getElementById("input-channel");
 // チャンネル新規作成して送信
 document.getElementById("form-channel").addEventListener("submit", (e) => {
   e.preventDefault();
-  socket.emit("create channel", inputChannell.value);
-  inputChannell.value = "";
+  const channelName = inputChannell.value.trim();
+  if (channelName === "") {
+    alert("文字を入力してください。");
+  } else {
+    if (channelName.length > 25) {
+      alert("25文字より小さくしてください。");
+    } else {
+      socket.emit("create channel", inputChannell.value);
+      inputChannell.value = "";
+    }
+  }
 });
 
 // チャンネルを追加
@@ -68,8 +76,17 @@ inputMessage.addEventListener("input", () => {
 // メッセージを送信
 document.getElementById("form-message").addEventListener("submit", (e) => {
   e.preventDefault();
-  socket.emit("chat message", inputMessage.value);
-  inputMessage.value = "";
+  const messageContent = inputMessage.value.trim();
+  if (messageContent === "") {
+    alert("文字を入力してください。");
+  } else {
+    if (messageContent > 255) {
+      alert("255文字より小さくしてください。");
+    } else {
+      socket.emit("chat message", inputMessage.value);
+      inputMessage.value = "";
+    }
+  }
 });
 
 // メッセージを表示

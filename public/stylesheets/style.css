@@ -2,7 +2,7 @@
   margin: 0;
   padding: 0;
   -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .container {
@@ -31,10 +31,15 @@
   background-color: #2b032c;
 }
 
+.container ul li.selected {
+  background-color: #1164a3;
+}
+
 .container ul li span {
   margin-left: 20px;
   width: 100%;
   height: 100%;
+  pointer-events: none;
 }
 
 .container ul li i {
@@ -43,8 +48,8 @@
 
 .container .right-content {
   -webkit-box-flex: 4;
-      -ms-flex: 4;
-          flex: 4;
+  -ms-flex: 4;
+  flex: 4;
   padding: 15px;
 }
 

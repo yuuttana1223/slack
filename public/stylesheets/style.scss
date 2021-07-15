@@ -24,6 +24,9 @@
       &:hover {
         background-color: #2b032c;
       }
+      &.selected {
+        background-color: rgb(17, 100, 163);
+      }
 
       span {
         margin-left: 20px;

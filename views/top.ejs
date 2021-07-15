@@ -17,8 +17,11 @@
     <main>
       <div class="container">
         <ul class="channel-list">
-          <li class="channel"><span># general</span></li>
-          <li class="channel"><span># random</span></li>
+          <% channels.forEach(channel => { %>
+          <li class="channel"><span># <%= channel.name %></span></li>
+          <% }) %>
+          <!-- <li class="channel"><span># general</span></li>
+          <li class="channel"><span># random</span></li> -->
           <li class="create-channel">
             <i class="fas fa-plus"></i>チャンネルを追加する
           </li>

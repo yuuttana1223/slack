@@ -9,7 +9,6 @@ const mysql = require("mysql2");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
 app.use(express.static("public"));
-// ejsでpostのときに必要
 app.use(express.urlencoded({ extended: false }));
 
 const connection = mysql.createConnection({
@@ -56,7 +55,7 @@ app.post(
     if (user.name.length > 20) errors.push("ユーザー名は２０文字以内です。");
     if (user.email === "") errors.push("メールアドレスが空です。");
     if (user.email.length > 255)
-      errors.push("ユーザー名は２５５文字以内です。");
+      errors.push("メールアドレスは２５５文字以内です。");
     if (password === "") errors.push("パスワードが空です。");
     if (password.length > 30) errors.push("パスワードは３０文字以内です。");
     if (passwordConfirmation !== password)
@@ -73,7 +72,7 @@ app.post(
       name: req.body.username,
       email: req.body.email,
     };
-    connection.query(
+    connection.execute(
       "SELECT * FROM users WHERE email = ?",
       [user.email],
       (error, results) => {
@@ -94,11 +93,10 @@ app.post(
     const email = req.body.email;
     const password = req.body.password;
     bcrypt.hash(password, 10, (error, hash) => {
-      connection.query(
+      connection.execute(
         "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
         [username, email, hash],
         (error, results) => {
-          console.log(results);
           req.session.userId = results.insertId;
           req.session.username = username;
           res.redirect("/");
@@ -114,7 +112,7 @@ app.get("/users/signin", (req, res) => {
 
 app.post("/users/signin", (req, res) => {
   const email = req.body.email;
-  connection.query(
+  connection.execute(
     "SELECT * FROM users WHERE email = ?",
     [email],
     (error, results) => {
@@ -150,13 +148,11 @@ app.post("/users/logout", (req, res) => {
   });
 });
 
-// socketで使うログインユーザー
-const currentUser = {};
-
 app.get("/", (req, res) => {
   if (req.session.username) {
-    currentUser.name = req.session.username;
-    res.render("top.ejs");
+    connection.execute("SELECT * FROM channels", (error, results) => {
+      res.render("top.ejs", { channels: results });
+    });
   } else {
     res.redirect("/users/signin");
   }
@@ -168,36 +164,69 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-  const { username } = socket.request.session;
-  socket.on("enter room", (roomName) => {
-    socket.roomName = roomName;
-    socket.join(socket.roomName);
+  const { username, userId } = socket.request.session;
+
+  const changeChannel = (channelName) => {
+    socket.leave(socket.channelName);
+    socket.channelName = channelName;
+    socket.join(socket.channelName);
+  };
+
+  socket.on("enter channel", (channelName) => {
+    connection.execute(
+      "SELECT * FROM channels WHERE name = ?",
+      [channelName],
+      (error, results) => {
+        if (error) {
+          console.log(errror);
+        } else {
+          socket.channelName = channelName;
+          socket.channelId = 1;
+          socket.join(socket.channelName);
+        }
+      }
+    );
   });
 
-  socket.on("change room", (roomName) => {
-    console.log(roomName);
-    socket.leave(socket.roomName);
-    socket.roomName = roomName;
-    socket.join(socket.roomName);
+  socket.on("change channel", (channelName) => {
+    changeChannel(channelName);
   });
 
   // チャンネル新規作成
   socket.on("create channel", (channelName) => {
-    io.emit("create channel", channelName);
-    io.to(socket.id).emit("change room", channelName);
+    connection.execute(
+      "INSERT INTO channels (name) VALUES (?)",
+      [channelName],
+      (error, results) => {
+        if (error) {
+          console.log(error);
+        } else {
+          socket.channelId = results.insertId;
+          io.emit("create channel", channelName);
+          // 部屋を作った人はその部屋に行く
+          changeChannel(channelName);
+        }
+      }
+    );
   });
 
-  socket.on("disconnect", () => {});
+  // socket.on("disconnect", () => {});
   // 送信されたメッセージを全員に送信
   socket.on("chat message", (message) => {
-    io.to(socket.roomName).emit("chat message", message);
+    connection.execute(
+      "INSERT INTO messages (content, user_id, channel_id) VALUES (?, ?, ?)",
+      [message, userId, socket.channelId]
+    );
+    io.to(socket.channelName).emit("chat message", message);
   });
 
   // 入力中を自分以外に伝える
   let notTyping = 0; // イベントを受信した回数
   socket.on("start typing", () => {
     if (notTyping <= 0) {
-      socket.broadcast.to(socket.roomName).emit("start typing", `${username}`);
+      socket.broadcast
+        .to(socket.channelName)
+        .emit("start typing", `${username}`);
     }
     notTyping++;
     // 3秒経っても入力がなかったら終了イベントを送信
