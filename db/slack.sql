@@ -23,10 +23,10 @@ VALUES
 create table messages (
     id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     content NVARCHAR(255) NOT NULL DEFAULT "",
-    user_id INT NOT NULL,
-    channel_id INT NOT NULL,
+    user_id INT,
+    channel_id INT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (channel_id) REFERENCES channels(id)
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    /* FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (channel_id) REFERENCES channels(id) */
   );

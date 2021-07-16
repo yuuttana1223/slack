@@ -73,7 +73,7 @@ app.post(
       email: req.body.email,
     };
     connection.execute(
-      "SELECT * FROM users WHERE email = ?",
+      "SELECT * FROM users WHERE email = ?;",
       [user.email],
       (error, results) => {
         if (results.length > 0) {
@@ -94,7 +94,7 @@ app.post(
     const password = req.body.password;
     bcrypt.hash(password, 10, (error, hash) => {
       connection.execute(
-        "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+        "INSERT INTO users (name, email, password) VALUES (?, ?, ?);",
         [username, email, hash],
         (error, results) => {
           req.session.userId = results.insertId;
@@ -113,7 +113,7 @@ app.get("/users/signin", (req, res) => {
 app.post("/users/signin", (req, res) => {
   const email = req.body.email;
   connection.execute(
-    "SELECT * FROM users WHERE email = ?",
+    "SELECT * FROM users WHERE email = ?;",
     [email],
     (error, results) => {
       if (results.length > 0) {
@@ -150,7 +150,7 @@ app.post("/users/logout", (req, res) => {
 
 app.get("/", (req, res) => {
   if (req.session.username) {
-    connection.execute("SELECT * FROM channels", (error, results) => {
+    connection.execute("SELECT * FROM channels;", (error, results) => {
       res.render("top.ejs", { channels: results });
     });
   } else {
@@ -166,45 +166,44 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   const { username, userId } = socket.request.session;
 
-  const changeChannel = (channelName) => {
-    socket.leave(socket.channelName);
-    socket.channelName = channelName;
-    socket.join(socket.channelName);
+  const changeChannel = (channelId) => {
+    socket.leave(socket.channelId);
+    socket.channelId = channelId;
+    socket.join(socket.channelId);
   };
 
-  socket.on("enter channel", (channelName) => {
+  socket.on("enter channel", (channelId) => {
     connection.execute(
-      "SELECT * FROM channels WHERE name = ?",
-      [channelName],
+      "SELECT * FROM messages WHERE channel_id = ?;",
+      [channelId],
       (error, results) => {
         if (error) {
           console.log(errror);
         } else {
-          socket.channelName = channelName;
-          socket.channelId = 1;
-          socket.join(socket.channelName);
+          socket.channelId = channelId;
+          socket.join(socket.channelId);
         }
       }
     );
   });
 
-  socket.on("change channel", (channelName) => {
-    changeChannel(channelName);
+  socket.on("change channel", (channelId) => {
+    changeChannel(channelId);
   });
 
   // チャンネル新規作成
   socket.on("create channel", (channelName) => {
     connection.execute(
-      "INSERT INTO channels (name) VALUES (?)",
+      "INSERT INTO channels (name) VALUES (?);",
       [channelName],
       (error, results) => {
         if (error) {
           console.log(error);
         } else {
-          socket.channelId = results.insertId;
-          io.emit("create channel", channelName);
+          io.emit("create channel", results.insertId, channelName);
           // 部屋を作った人はその部屋に行く
-          changeChannel(channelName);
+          changeChannel(`${results.insertId}`);
+          socket.emit("change selectedColor");
         }
       }
     );
@@ -214,19 +213,17 @@ io.on("connection", (socket) => {
   // 送信されたメッセージを全員に送信
   socket.on("chat message", (message) => {
     connection.execute(
-      "INSERT INTO messages (content, user_id, channel_id) VALUES (?, ?, ?)",
+      "INSERT INTO messages (content, user_id, channel_id) VALUES (?, ?, ?);",
       [message, userId, socket.channelId]
     );
-    io.to(socket.channelName).emit("chat message", message);
+    io.to(socket.channelId).emit("chat message", message);
   });
 
   // 入力中を自分以外に伝える
   let notTyping = 0; // イベントを受信した回数
   socket.on("start typing", () => {
     if (notTyping <= 0) {
-      socket.broadcast
-        .to(socket.channelName)
-        .emit("start typing", `${username}`);
+      socket.broadcast.to(socket.channelId).emit("start typing", `${username}`);
     }
     notTyping++;
     // 3秒経っても入力がなかったら終了イベントを送信

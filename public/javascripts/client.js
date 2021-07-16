@@ -5,21 +5,25 @@ const inputMessage = document.getElementById("input-message");
 const modal = document.getElementById("myModal");
 const channel = document.querySelector(".channel");
 
+const changeSelectedColor = (channel) => {
+  document.querySelector(".selected").classList.remove("selected");
+  channel.classList.add("selected");
+};
+
+// クリックしたチャンネルの色を変えて、チャンネル変更を設定
 const addEventToChannell = (channel) => {
   channel.addEventListener("click", (e) => {
-    document.querySelector(".selected").classList.remove("selected");
-    e.target.classList.add("selected");
-    // 例# generalをgeneralにする
-    const channelName = e.target.textContent.split("# ")[1];
-    socket.emit("change channel", channelName);
+    changeSelectedColor(e.target);
+    const channelId = channel.id.split("channel")[1];
+    socket.emit("change channel", channelId);
   });
 };
 
 // 予約語(connect) 接続時
 socket.on("connect", () => {
   channel.classList.add("selected");
-  const channelName = channel.textContent.split("# ")[1];
-  socket.emit("enter channel", channelName);
+  const channelId = channel.id.split("channel")[1];
+  socket.emit("enter channel", channelId);
 });
 
 // 切り替えたいチャンネルの名前を送信
@@ -52,20 +56,28 @@ document.getElementById("form-channel").addEventListener("submit", (e) => {
     if (channelName.length > 25) {
       alert("25文字より小さくしてください。");
     } else {
-      socket.emit("create channel", inputChannell.value);
+      socket.emit("create channel", channelName);
       inputChannell.value = "";
     }
   }
 });
 
 // チャンネルを追加
-socket.on("create channel", (channelName) => {
+socket.on("create channel", (channelId, channelName) => {
   const li = document.createElement("li");
   li.className = "channel";
+  li.id = `channel${channelId}`;
   li.innerHTML = `<span># ${channelName}</span>`;
   addEventToChannell(li);
   document.querySelector(".channel-list").insertBefore(li, createChannellBtn);
   modal.style.display = "none";
+});
+
+// 部屋を作った人のチャンネルの色を変える
+socket.on("change selectedColor", () => {
+  const newChannel =
+    document.querySelector(".create-channel").previousElementSibling;
+  changeSelectedColor(newChannel);
 });
 
 // 入力中を伝える

@@ -18,7 +18,9 @@
       <div class="container">
         <ul class="channel-list">
           <% channels.forEach(channel => { %>
-          <li class="channel"><span># <%= channel.name %></span></li>
+          <li class="channel" id="channel<%= channel.id %>">
+            <span># <%= channel.name %></span>
+          </li>
           <% }) %>
           <!-- <li class="channel"><span># general</span></li>
           <li class="channel"><span># random</span></li> -->
@@ -46,7 +48,7 @@
               <input
                 type="text"
                 id="input-channel"
-                placeholder="# 例: general,random"
+                placeholder="# 例: general, random"
                 required
               />
               <div class="submit-btn">
