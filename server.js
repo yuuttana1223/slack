@@ -51,14 +51,14 @@ app.post(
     const passwordConfirmation = req.body.password_confirmation;
     const errors = [];
 
-    if (user.name === "") errors.push("ユーザー名が空です。");
-    if (user.name.length > 20) errors.push("ユーザー名は２０文字以内です。");
-    if (user.email === "") errors.push("メールアドレスが空です。");
-    if (user.email.length > 255)
+    user.name === "" && errors.push("ユーザー名が空です。");
+    user.name.length > 20 && errors.push("ユーザー名は２０文字以内です。");
+    user.email === "" && errors.push("メールアドレスが空です。");
+    user.email.length > 255 &&
       errors.push("メールアドレスは２５５文字以内です。");
-    if (password === "") errors.push("パスワードが空です。");
-    if (password.length > 30) errors.push("パスワードは３０文字以内です。");
-    if (passwordConfirmation !== password)
+    password === "" && errors.push("パスワードが空です。");
+    password.length > 30 && errors.push("パスワードは３０文字以内です。");
+    passwordConfirmation !== password &&
       errors.push("パスワードが一致していません。");
     if (errors.length > 0) {
       res.render("users/signup.ejs", { errors: errors, user: user });
@@ -73,7 +73,7 @@ app.post(
       email: req.body.email,
     };
     connection.execute(
-      "SELECT * FROM users WHERE email = ?;",
+      "SELECT name, email FROM users WHERE email = ?;",
       [user.email],
       (error, results) => {
         if (results.length > 0) {
@@ -113,7 +113,7 @@ app.get("/users/signin", (req, res) => {
 app.post("/users/signin", (req, res) => {
   const email = req.body.email;
   connection.execute(
-    "SELECT * FROM users WHERE email = ?;",
+    "SELECT id, name, email, password FROM users WHERE email = ?;",
     [email],
     (error, results) => {
       if (results.length > 0) {
@@ -150,7 +150,7 @@ app.post("/users/logout", (req, res) => {
 
 app.get("/", (req, res) => {
   if (req.session.username) {
-    connection.execute("SELECT * FROM channels;", (error, results) => {
+    connection.query("SELECT id, name FROM channels;", (error, results) => {
       res.render("top.ejs", { channels: results });
     });
   } else {
@@ -165,26 +165,32 @@ io.use((socket, next) => {
 
 io.on("connection", (socket) => {
   const { username, userId } = socket.request.session;
+  const messagesJoinUsersSql =
+    "SELECT messages.id, content, name FROM messages INNER JOIN users ON messages.user_id = users.id WHERE channel_id = ?;";
 
   const changeChannel = (channelId) => {
     socket.leave(socket.channelId);
     socket.channelId = channelId;
     socket.join(socket.channelId);
+    connection.execute(messagesJoinUsersSql, [channelId], (error, results) => {
+      if (error) {
+        console.log(error);
+      } else {
+        socket.emit("message history", results);
+      }
+    });
   };
 
   socket.on("enter channel", (channelId) => {
-    connection.execute(
-      "SELECT * FROM messages WHERE channel_id = ?;",
-      [channelId],
-      (error, results) => {
-        if (error) {
-          console.log(errror);
-        } else {
-          socket.channelId = channelId;
-          socket.join(socket.channelId);
-        }
+    connection.execute(messagesJoinUsersSql, [channelId], (error, results) => {
+      if (error) {
+        console.log(error);
+      } else {
+        socket.channelId = channelId;
+        socket.join(socket.channelId);
+        socket.emit("message history", results);
       }
-    );
+    });
   });
 
   socket.on("change channel", (channelId) => {
@@ -214,9 +220,36 @@ io.on("connection", (socket) => {
   socket.on("chat message", (message) => {
     connection.execute(
       "INSERT INTO messages (content, user_id, channel_id) VALUES (?, ?, ?);",
-      [message, userId, socket.channelId]
+      [message, userId, socket.channelId],
+      (error, messages) => {
+        if (error) {
+          console.log(error);
+        } else {
+          connection.execute(
+            "SELECT name FROM users WHERE id = ?",
+            [userId],
+            (error, users) => {
+              if (error) {
+                console.log(error);
+              } else {
+                io.to(socket.channelId).emit(
+                  "chat message",
+                  message,
+                  users[0].name,
+                  messages.insertId
+                );
+              }
+            }
+          );
+        }
+      }
     );
-    io.to(socket.channelId).emit("chat message", message);
+  });
+
+  socket.on("add reaction", (messageId, stampUrl, stampName) => {
+    socket.broadcast
+      .to(socket.channelId)
+      .emit("add reaction", messageId, stampUrl, stampName);
   });
 
   // 入力中を自分以外に伝える

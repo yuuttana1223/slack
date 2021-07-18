@@ -1,5 +1,8 @@
-drop table if exists messages;
-drop table if exists channels;
+DROP DATABASE if exists slack;
+CREATE DATABASE slack DEFAULT CHARACTER SET utf8;
+USE slack;
+-- drop table if exists messages;
+-- drop table if exists channels;
 -- drop table if exists users;
 create table users (
   id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -26,7 +29,7 @@ create table messages (
     user_id INT,
     channel_id INT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    /* FOREIGN KEY (user_id) REFERENCES users(id),
-                FOREIGN KEY (channel_id) REFERENCES channels(id) */
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (channel_id) REFERENCES channels(id)
   );

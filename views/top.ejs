@@ -22,8 +22,6 @@
             <span># <%= channel.name %></span>
           </li>
           <% }) %>
-          <!-- <li class="channel"><span># general</span></li>
-          <li class="channel"><span># random</span></li> -->
           <li class="create-channel">
             <i class="fas fa-plus"></i>チャンネルを追加する
           </li>
@@ -39,8 +37,8 @@
         </div>
 
         <!-- モーダルの外側(モーダル以外のすべて) -->
-        <div id="myModal" class="modal">
-          <!-- モーダルの内容 -->
+        <div id="modal1" class="modal">
+          <!-- チャンネル作成の内容 -->
           <div class="modal-content">
             <span class="close">&times;</span>
             <form id="form-channel">
@@ -57,9 +55,33 @@
             </form>
           </div>
         </div>
+        <div id="modal2" class="modal">
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="stamp">
+              <img
+                src="https://a.slack-edge.com/production-standard-emoji-assets/13.0/apple-small/1f44d.png"
+                alt="good"
+              />
+
+              <img
+                src="https://a.slack-edge.com/production-standard-emoji-assets/13.0/apple-small/2705.png"
+                alt="check"
+              />
+              <img
+                src="https://a.slack-edge.com/production-standard-emoji-assets/13.0/apple-small/1f62d.png"
+                alt="crying"
+              />
+              <img
+                src="https://emoji.slack-edge.com/T4N45LPU2/zenno/c4161c6ec90412b2.png"
+                alt="zenno"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </main>
-
+    <script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="javascripts/client.js"></script>
   </body>

@@ -2,7 +2,7 @@
   margin: 0;
   padding: 0;
   -webkit-box-sizing: border-box;
-  box-sizing: border-box;
+          box-sizing: border-box;
 }
 
 .container {
@@ -13,8 +13,9 @@
 }
 
 .container ul {
-  width: 230px;
+  width: 25%;
   height: 100vh;
+  overflow: scroll;
   background-color: #3f0e40;
   padding: 20px 0;
   font-size: 0.9em;
@@ -22,6 +23,7 @@
 
 .container ul li {
   display: block;
+  word-break: break-all;
   color: #cfc3cf;
   padding: 5px 0;
   cursor: pointer;
@@ -36,10 +38,10 @@
 }
 
 .container ul li span {
+  pointer-events: none;
   margin-left: 20px;
   width: 100%;
   height: 100%;
-  pointer-events: none;
 }
 
 .container ul li i {
@@ -47,14 +49,62 @@
 }
 
 .container .right-content {
-  -webkit-box-flex: 4;
-  -ms-flex: 4;
-  flex: 4;
+  width: 75%;
+  height: 100vh;
+  overflow: scroll;
   padding: 15px;
 }
 
-.container .right-content .messages p {
-  padding: 10px;
+.container .right-content .messages .message {
+  margin-top: 10px;
+}
+
+.container .right-content .messages .message:hover {
+  background-color: #f8f5f5;
+}
+
+.container .right-content .messages .message:last-of-type {
+  margin-bottom: 40px;
+}
+
+.container .right-content .messages .message p {
+  font-size: 0.9em;
+  padding: 0 10px 10px 10px;
+  word-wrap: break-word;
+}
+
+.container .right-content .messages .message span {
+  margin-left: 10px;
+}
+
+.container .right-content .messages .message span:first-of-type {
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.container .right-content .messages .message span .iconify {
+  cursor: pointer;
+  background-color: #f6f3f3;
+  border: 1px #aaa solid;
+  border-radius: 5px;
+  height: 20px;
+  width: 30px;
+}
+
+.container .right-content .messages .message span .iconify:hover {
+  background-color: #fefefe;
+}
+
+.container .right-content .messages .message img {
+  margin-left: 10px;
+  height: 18px;
+}
+
+.container .right-content form {
+  position: fixed;
+  right: 0;
+  bottom: 10px;
+  width: 70%;
 }
 
 .container .right-content form input {
@@ -81,38 +131,49 @@
   background-color: rgba(0, 0, 0, 0.4);
 }
 
-.container .modal-content {
+.container .modal:last-of-type .modal-content {
+  width: 20%;
+}
+
+.container .modal .modal-content {
+  width: 50%;
   background-color: #fefefe;
   margin: 15% auto;
   padding: 20px;
   border: 1px solid #888;
+  border-radius: 10px;
   text-align: right;
-  width: 50%;
 }
 
-.container .close {
+.container .modal .modal-content .close {
   width: 28px;
   color: #aaa;
   font-size: 28px;
   font-weight: bold;
 }
 
-.container form {
+.container .modal .modal-content .close:hover, .container .modal .modal-content .close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.container .modal .modal-content form {
   text-align: left;
 }
 
-.container form input {
+.container .modal .modal-content form input {
   margin-top: 5px;
   width: 100%;
   border-radius: 5px;
   padding: 10px;
 }
 
-.container form .submit-btn {
+.container .modal .modal-content form .submit-btn {
   text-align: right;
 }
 
-.container form .submit-btn button {
+.container .modal .modal-content form .submit-btn button {
   text-align: right;
   border-radius: 5px;
   padding: 5px 20px;
@@ -121,10 +182,38 @@
   background-color: #dddddd;
 }
 
-.container .close:hover,
-.container .close:focus {
-  color: black;
-  text-decoration: none;
+.container .modal .modal-content .stamp {
+  text-align: left;
+}
+
+.container .modal .modal-content .stamp img {
+  height: 30px;
+  margin: 10px;
   cursor: pointer;
+}
+
+.container .modal .modal-content .stamp img:hover {
+  background-color: rgba(155, 223, 88, 0.7);
+}
+
+@media screen and (max-width: 950px) {
+  .container .right-content form input {
+    width: 80%;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .container ul {
+    width: 20%;
+  }
+  .container .right-content {
+    width: 80%;
+  }
+  .container .right-content form {
+    width: 80%;
+  }
+  .container .right-content form input {
+    margin-left: 30px;
+  }
 }
 /*# sourceMappingURL=style.css.map */
