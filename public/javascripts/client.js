@@ -44,6 +44,8 @@ const appendMessage = (message, username, messageId) => {
   const reactionIcon = createReactionIcon();
   div.appendChild(reactionIcon);
   document.querySelector(".messages").appendChild(div);
+  const rightContent = document.querySelector(".right-content");
+  rightContent.scrollTo(0, rightContent.scrollHeight);
 };
 
 // クリックしたチャンネルの色を変えて、チャンネル変更を設定

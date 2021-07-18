@@ -60,6 +60,7 @@ app.post(
     password.length > 30 && errors.push("パスワードは３０文字以内です。");
     passwordConfirmation !== password &&
       errors.push("パスワードが一致していません。");
+
     if (errors.length > 0) {
       res.render("users/signup.ejs", { errors: errors, user: user });
     } else {
@@ -256,7 +257,7 @@ io.on("connection", (socket) => {
   let notTyping = 0; // イベントを受信した回数
   socket.on("start typing", () => {
     if (notTyping <= 0) {
-      socket.broadcast.to(socket.channelId).emit("start typing", `${username}`);
+      socket.broadcast.to(socket.channelId).emit("start typing", username);
     }
     notTyping++;
     // 3秒経っても入力がなかったら終了イベントを送信
