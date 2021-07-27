@@ -23,21 +23,25 @@ const sessionMiddleware = session({
   resave: false,
   saveUninitialized: false,
 });
+
 app.session = sessionMiddleware;
 app.use(sessionMiddleware);
 
 app.use((req, res, next) => {
   if (req.session.userId === undefined) {
-    res.locals.isLoggedIn = false;
   } else {
+    res.locals.userId = req.session.userId;
     res.locals.username = req.session.username;
-    res.locals.isLoggedIn = true;
   }
   next();
 });
 
 app.get("/users/signup", (req, res) => {
-  res.render("users/signup.ejs", { errors: [], user: {} });
+  if (req.session.userId === undefined) {
+    res.render("users/signup.ejs", { errors: [], user: {} });
+  } else {
+    res.redirect("/");
+  }
 });
 
 app.post(
@@ -108,7 +112,11 @@ app.post(
 );
 
 app.get("/users/signin", (req, res) => {
-  res.render("users/signin.ejs", { errors: [], email: "" });
+  if (req.session.userId === undefined) {
+    res.render("users/signin.ejs", { errors: [], email: "" });
+  } else {
+    res.redirect("/");
+  }
 });
 
 app.post("/users/signin", (req, res) => {
@@ -143,16 +151,22 @@ app.post("/users/signin", (req, res) => {
   );
 });
 
-app.post("/users/logout", (req, res) => {
+app.get("/users/logout", (req, res) => {
   req.session.destroy((error) => {
-    res.redirect("/users/login");
+    res.redirect("/users/signin");
   });
 });
 
 app.get("/", (req, res) => {
   if (req.session.username) {
-    connection.query("SELECT id, name FROM channels;", (error, results) => {
-      res.render("top.ejs", { channels: results });
+    connection.query("SELECT id, name FROM channels;", (error, channels) => {
+      connection.execute(
+        "SELECT id, name FROM users WHERE id != ?",
+        [req.session.userId],
+        (error, users) => {
+          res.render("top.ejs", { channels: channels, users: users });
+        }
+      );
     });
   } else {
     res.redirect("/users/signin");
@@ -169,10 +183,14 @@ io.on("connection", (socket) => {
   const messagesJoinUsersSql =
     "SELECT messages.id, content, name FROM messages INNER JOIN users ON messages.user_id = users.id WHERE channel_id = ?;";
 
-  const changeChannel = (channelId) => {
+  const changeSocketRoom = (room) => {
     socket.leave(socket.channelId);
-    socket.channelId = channelId;
+    socket.channelId = room;
     socket.join(socket.channelId);
+  };
+
+  const changeChannel = (channelId) => {
+    changeSocketRoom(channelId);
     connection.execute(messagesJoinUsersSql, [channelId], (error, results) => {
       if (error) {
         console.log(error);
@@ -182,6 +200,14 @@ io.on("connection", (socket) => {
     });
   };
 
+  // 送信者(userId)と受信者(recipientId)を昇順にする
+  const sortId = (recipientId) => {
+    const smallerNum = recipientId > userId ? userId : recipientId;
+    const largerNum = recipientId > userId ? recipientId : userId;
+
+    return { smallerNum, largerNum };
+  };
+
   socket.on("enter channel", (channelId) => {
     connection.execute(messagesJoinUsersSql, [channelId], (error, results) => {
       if (error) {
@@ -189,13 +215,31 @@ io.on("connection", (socket) => {
       } else {
         socket.channelId = channelId;
         socket.join(socket.channelId);
-        socket.emit("message history", results);
+        socket.emit("message history", results, username);
+        socket.broadcast.emit("enter user", userId, username);
       }
     });
   });
 
   socket.on("change channel", (channelId) => {
     changeChannel(channelId);
+  });
+
+  socket.on("change DM", (recipientId) => {
+    const { smallerNum, largerNum } = sortId(recipientId);
+    changeSocketRoom(`${smallerNum} ${largerNum}`);
+
+    connection.execute(
+      "SELECT messages.id, content, name FROM messages INNER JOIN users ON messages.user_id = users.id WHERE (user_id = ? AND recipient_id = ?) OR (user_id = ? AND recipient_id = ?) ORDER BY messages.id ASC;",
+      [userId, recipientId, recipientId, userId],
+      (error, results) => {
+        if (error) {
+          console.log(error);
+        } else {
+          socket.emit("message history", results);
+        }
+      }
+    );
   });
 
   // チャンネル新規作成
@@ -217,30 +261,46 @@ io.on("connection", (socket) => {
   });
 
   // socket.on("disconnect", () => {});
+
+  socket.on("submit image", (imageData) => {
+    socket.broadcast
+      .to(socket.channelId)
+      .emit("submit image", imageData, username);
+  });
+
   // 送信されたメッセージを全員に送信
   socket.on("chat message", (message) => {
     connection.execute(
       "INSERT INTO messages (content, user_id, channel_id) VALUES (?, ?, ?);",
       [message, userId, socket.channelId],
-      (error, messages) => {
+      (error, result) => {
         if (error) {
           console.log(error);
         } else {
-          connection.execute(
-            "SELECT name FROM users WHERE id = ?",
-            [userId],
-            (error, users) => {
-              if (error) {
-                console.log(error);
-              } else {
-                io.to(socket.channelId).emit(
-                  "chat message",
-                  message,
-                  users[0].name,
-                  messages.insertId
-                );
-              }
-            }
+          io.to(socket.channelId).emit(
+            "chat message",
+            message,
+            username,
+            result.insertId
+          );
+        }
+      }
+    );
+  });
+
+  socket.on("private message", (message, recipientId) => {
+    connection.execute(
+      "INSERT INTO messages (content, user_id, recipient_id) VALUES (?, ?, ?);",
+      [message, userId, recipientId],
+      (error, result) => {
+        if (error) {
+          console.log(error);
+        } else {
+          io.to(socket.channelId).emit(
+            "chat message",
+            message,
+            username,
+            result.insertId
           );
         }
       }

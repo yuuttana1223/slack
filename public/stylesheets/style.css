@@ -12,39 +12,46 @@
   height: 100%;
 }
 
-.container ul {
+.container .sidebar {
   width: 25%;
   height: 100vh;
-  overflow: scroll;
   background-color: #3f0e40;
-  padding: 20px 0;
   font-size: 0.9em;
+  overflow: scroll;
+  color: #cfc3cf;
 }
 
-.container ul li {
-  display: block;
+.container .sidebar p {
+  margin-top: 20px;
+}
+
+.container .sidebar p span {
+  margin-left: 20px;
+  font-size: 16px;
+}
+
+.container .sidebar ul li {
   word-break: break-all;
-  color: #cfc3cf;
   padding: 5px 0;
   cursor: pointer;
 }
 
-.container ul li:hover {
+.container .sidebar ul li:hover {
   background-color: #2b032c;
 }
 
-.container ul li.selected {
+.container .sidebar ul li.selected {
   background-color: #1164a3;
 }
 
-.container ul li span {
+.container .sidebar ul li span {
   pointer-events: none;
   margin-left: 20px;
   width: 100%;
   height: 100%;
 }
 
-.container ul li i {
+.container .sidebar ul li i {
   margin: 0 5px 0 20px;
 }
 
@@ -64,7 +71,7 @@
 }
 
 .container .right-content .messages .message:last-of-type {
-  margin-bottom: 40px;
+  margin-bottom: 90px;
 }
 
 .container .right-content .messages .message p {
@@ -103,13 +110,20 @@
 .container .right-content form {
   position: fixed;
   right: 0;
-  bottom: 10px;
+  bottom: 20px;
   width: 70%;
 }
 
 .container .right-content form input {
   width: 90%;
+  outline: none;
   padding: 10px;
+}
+
+.container .right-content form input#file {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 350px;
 }
 
 .container .right-content form button {
@@ -163,8 +177,9 @@
 }
 
 .container .modal .modal-content form input {
-  margin-top: 5px;
   width: 100%;
+  outline: none;
+  margin-top: 5px;
   border-radius: 5px;
   padding: 10px;
 }
@@ -203,17 +218,8 @@
 }
 
 @media screen and (min-width: 1200px) {
-  .container ul {
-    width: 20%;
-  }
-  .container .right-content {
-    width: 80%;
-  }
   .container .right-content form {
-    width: 80%;
-  }
-  .container .right-content form input {
-    margin-left: 30px;
+    width: 70%;
   }
 }
 /*# sourceMappingURL=style.css.map */

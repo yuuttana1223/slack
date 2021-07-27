@@ -16,22 +16,37 @@
   <body>
     <main>
       <div class="container">
-        <ul class="channel-list">
-          <% channels.forEach(channel => { %>
-          <li class="channel" id="channel<%= channel.id %>">
-            <span># <%= channel.name %></span>
-          </li>
-          <% }) %>
-          <li class="create-channel">
-            <i class="fas fa-plus"></i>チャンネルを追加する
-          </li>
-        </ul>
+        <div class="sidebar">
+          <p class="channel-title"><span>チャンネル</span></p>
+          <ul class="channel-list">
+            <% channels.forEach(channel => { %>
+            <li class="channel" id="channel<%= channel.id %>">
+              <span># <%= channel.name %></span>
+            </li>
+            <% }) %>
+            <li class="create-channel">
+              <i class="fas fa-plus"></i>チャンネルを追加する
+            </li>
+          </ul>
+          <p><span>ダイレクトメッセージ</span></p>
+          <ul class="users">
+            <li class="user" id="user<%= locals.userId %>">
+              <span id="current-username"><%= locals.username %> (自分)</span>
+            </li>
+            <% users.forEach(user => { %>
+            <li class="user" id="user<%= user.id %>">
+              <span><%= user.name %></span>
+            </li>
+            <% }) %>
+          </ul>
+        </div>
         <div class="right-content">
           <div class="messages"></div>
           <div class="typing"></div>
 
-          <form action="" id="form-message">
-            <input type="text" id="input-message" required />
+          <form action="" method="post" id="form-message">
+            <input type="file" name="file" id="file" />
+            <input type="text" id="input-message" />
             <button type="submit">submit</button>
           </form>
         </div>
