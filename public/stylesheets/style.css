@@ -5,10 +5,44 @@
           box-sizing: border-box;
 }
 
+header {
+  position: fixed;
+  z-index: 1;
+  width: 100vw;
+  height: 38px;
+  background-color: #350d36;
+}
+
+header div {
+  height: 28px;
+  text-align: center;
+}
+
+header div button {
+  height: 24px;
+  width: 40vw;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  margin: 7px 0px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+header div button:hover {
+  background-color: rgba(255, 255, 255, 0.23);
+}
+
+header div button i {
+  margin-right: 1em;
+}
+
 .container {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  position: relative;
+  top: 38px;
   height: 100%;
 }
 
@@ -102,6 +136,12 @@
   background-color: #fefefe;
 }
 
+.container .right-content .messages .message time {
+  margin-left: 10px;
+  font-size: 0.9em;
+  font-weight: lighter;
+}
+
 .container .right-content .messages .message img {
   margin-left: 10px;
   height: 18px;
@@ -145,8 +185,82 @@
   background-color: rgba(0, 0, 0, 0.4);
 }
 
-.container .modal:last-of-type .modal-content {
+.container .modal#modal1 form {
+  text-align: left;
+}
+
+.container .modal#modal1 form input {
+  width: 100%;
+  outline: none;
+  margin-top: 5px;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.container .modal#modal1 form .submit-btn {
+  text-align: right;
+}
+
+.container .modal#modal1 form .submit-btn button {
+  text-align: right;
+  border-radius: 5px;
+  padding: 5px 20px;
+  margin-top: 5px;
+  cursor: pointer;
+  background-color: #dddddd;
+}
+
+.container .modal#modal2 .modal-content {
   width: 20%;
+}
+
+.container .modal#modal2 .modal-content .stamp {
+  text-align: left;
+}
+
+.container .modal#modal2 .modal-content .stamp img {
+  height: 30px;
+  margin: 10px;
+  cursor: pointer;
+}
+
+.container .modal#modal2 .modal-content .stamp img:hover {
+  background-color: rgba(155, 223, 88, 0.7);
+}
+
+.container .modal#modal3 .modal-content {
+  width: 50%;
+  z-index: 2;
+  margin-top: 0;
+  top: 0;
+  padding: 0 0 0 30px;
+  text-align: left;
+}
+
+.container .modal#modal3 .modal-content .search-input {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+.container .modal#modal3 .modal-content .search-input label {
+  line-height: 38px;
+}
+
+.container .modal#modal3 .modal-content .search-input input {
+  border: none;
+  outline: none;
+  width: 95%;
+  height: 38px;
+  padding: 5px 15px;
+}
+
+.container .modal#modal3 .modal-content .search-input datalist {
+  width: 100%;
+  background-color: white;
 }
 
 .container .modal .modal-content {
@@ -170,45 +284,6 @@
   color: black;
   text-decoration: none;
   cursor: pointer;
-}
-
-.container .modal .modal-content form {
-  text-align: left;
-}
-
-.container .modal .modal-content form input {
-  width: 100%;
-  outline: none;
-  margin-top: 5px;
-  border-radius: 5px;
-  padding: 10px;
-}
-
-.container .modal .modal-content form .submit-btn {
-  text-align: right;
-}
-
-.container .modal .modal-content form .submit-btn button {
-  text-align: right;
-  border-radius: 5px;
-  padding: 5px 20px;
-  margin-top: 5px;
-  cursor: pointer;
-  background-color: #dddddd;
-}
-
-.container .modal .modal-content .stamp {
-  text-align: left;
-}
-
-.container .modal .modal-content .stamp img {
-  height: 30px;
-  margin: 10px;
-  cursor: pointer;
-}
-
-.container .modal .modal-content .stamp img:hover {
-  background-color: rgba(155, 223, 88, 0.7);
 }
 
 @media screen and (max-width: 950px) {

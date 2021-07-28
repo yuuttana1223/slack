@@ -1,6 +1,8 @@
 "use strict";
 const socket = io();
 
+const searchModal = document.getElementById("modal3");
+const container = document.querySelector(".container");
 const createChannelBtn = document.querySelector(".create-channel");
 const channel = document.querySelector(".channel");
 const createChannelModal = document.getElementById("modal1");
@@ -10,7 +12,23 @@ const addStampModal = document.getElementById("modal2");
 const form = document.getElementById("form-message");
 const imageFile = document.getElementById("file");
 const inputMessage = document.getElementById("input-message");
+// リアクションをする行を記憶する
 let pressedRow = {};
+
+// 新たなチャンネルやユーザが追加されたときに選択肢に現れる
+const appendRoomOption = (roomId, roomName, isChannel) => {
+  const option = document.createElement("option");
+  option.className = "room";
+  if (isChannel) {
+    option.dataset.channelId = roomId;
+    option.value = `#${roomName}`;
+    document.querySelector(".select-channels").appendChild(option);
+  } else {
+    option.dataset.userId = roomId;
+    option.value = `@${roomName}`;
+    document.querySelector(".select-users").appendChild(option);
+  }
+};
 
 // 選択された項目の色を切り替える
 const changeSelectedColor = (room) => {
@@ -36,14 +54,16 @@ const createReactionIcon = () => {
 };
 
 // 送信主、メッセージ(messageIdがなければ画像)、スタンプ追加アイコンを表示
-const appendMessage = (message, username, messageId) => {
+const appendMessage = (message, username, messageId, createdAt) => {
   const span = document.createElement("span");
   span.textContent = username;
   const div = document.createElement("div");
   div.className = "message";
   div.appendChild(span);
-
-  div.id = `message${messageId}`;
+  const time = document.createElement("time");
+  time.textContent = createdAt;
+  div.appendChild(time);
+  div.dataset.messageId = messageId;
   const p = document.createElement("p");
   p.innerHTML = message;
   div.appendChild(p);
@@ -54,24 +74,24 @@ const appendMessage = (message, username, messageId) => {
   rightContent.scrollTo(0, rightContent.scrollHeight);
 };
 
-// クリックしたチャンネルの色を変えて、チャンネル変更を設定
+// クリックしたチャンネルの色を変えて、チャンネル変更を伝える
 const addEventToChannel = (channel) => {
   channel.addEventListener("click", (e) => {
     changeSelectedColor(e.target);
-    // 例channel5なら5を取り出す
-    const channelId = channel.id.split("channel")[1];
+    const channelId = channel.dataset.channelId;
     socket.emit("change channel", channelId);
   });
 };
 
+// クリックしたユーザーの色を変えて、ユーザー変更を伝える
 const addEventToDM = (user) => {
   user.addEventListener("click", (e) => {
     changeSelectedColor(e.target);
-    const userId = user.id.split("user")[1];
-    socket.emit("change DM", userId);
+    socket.emit("change DM", user.dataset.userId);
   });
 };
 
+// 画像を貼る
 const drawCanvas = (imageData, username) => {
   if (imageData) {
     const img = new Image();
@@ -92,11 +112,45 @@ const drawCanvas = (imageData, username) => {
   }
 };
 
+document.querySelector(".search-btn").addEventListener("click", () => {
+  searchModal.style.display = "block";
+  document.getElementById("input").focus();
+  container.style.top = "0";
+});
+
+// 入力されたチャンネルやユーザに飛ぶ
+document.getElementById("input").addEventListener("input", (e) => {
+  document.querySelectorAll(".room").forEach((room) => {
+    if (e.target.value === room.value) {
+      if (room.value.includes("#")) {
+        document.querySelectorAll(".channel").forEach((channel) => {
+          const channelId = channel.dataset.channelId;
+          // datasetは型を変えないとtrueにならない
+          if (Number(room.dataset.channelId) === Number(channelId)) {
+            changeSelectedColor(channel);
+            socket.emit("change channel", channelId);
+          }
+        });
+      } else if (room.value.includes("@")) {
+        document.querySelectorAll(".user").forEach((user) => {
+          const userId = user.dataset.userId;
+          if (Number(room.dataset.userId) === Number(userId)) {
+            changeSelectedColor(user);
+            socket.emit("change DM", userId);
+          }
+        });
+      }
+      searchModal.style.display = "none";
+      container.style.top = "38px";
+      e.target.value = "";
+    }
+  });
+});
+
 // 予約語(connect) 接続時
 socket.on("connect", () => {
   channel.classList.add("selected");
-  const channelId = channel.id.split("channel")[1];
-  socket.emit("enter channel", channelId);
+  socket.emit("enter channel", channel.dataset.channelId);
 });
 
 // 新規ユーザをサイドバーに足す
@@ -105,10 +159,11 @@ socket.on("enter user", (userId, username) => {
   if (userCount === userId - 1) {
     const li = document.createElement("li");
     li.className = "user";
-    li.id = `user${userId}`;
+    li.dataset.userId = userId;
     li.innerHTML = `<span>${username}</span>`;
     addEventToDM(li);
     document.querySelector(".users").appendChild(li);
+    appendRoomOption(userId, username, /*isChannel=*/ false);
   }
 });
 
@@ -116,7 +171,12 @@ socket.on("enter user", (userId, username) => {
 socket.on("message history", (messages, username) => {
   document.querySelector(".messages").innerHTML = "";
   messages.forEach((message) => {
-    appendMessage(message.content, message.name, message.id);
+    appendMessage(
+      message.content,
+      message.name,
+      message.id,
+      message.created_at
+    );
   });
 });
 
@@ -132,6 +192,7 @@ document.querySelectorAll(".user").forEach((user) => {
 
 createChannelBtn.addEventListener("click", () => {
   createChannelModal.style.display = "block";
+  document.getElementById("input-channel").focus();
 });
 
 const stamps = document.querySelector(".stamp").children;
@@ -139,9 +200,12 @@ const stamps = document.querySelector(".stamp").children;
 for (let i = 0; i < stamps.length; i++) {
   stamps[i].addEventListener("click", (e) => {
     pressedRow.appendChild(e.target.cloneNode(true));
-    // 例 message1 -> 1
-    const messageId = pressedRow.id.split("message")[1];
-    socket.emit("add reaction", messageId, stamps[i].src, stamps[i].alt);
+    socket.emit(
+      "add reaction",
+      pressedRow.dataset.messageId,
+      stamps[i].src,
+      stamps[i].alt
+    );
     addStampModal.style.display = "none";
   });
 }
@@ -150,7 +214,11 @@ socket.on("add reaction", (messageId, stampUrl, stampName) => {
   const img = document.createElement("img");
   img.src = stampUrl;
   img.alt = stampName;
-  document.getElementById(`message${messageId}`).appendChild(img);
+  document.querySelectorAll(".message").forEach((message) => {
+    if (message.dataset.messageId === messageId) {
+      message.appendChild(img);
+    }
+  });
 });
 
 // バツボタンを押すとモーダルが消える
@@ -158,15 +226,24 @@ document.querySelectorAll(".close").forEach((closeBtn) => {
   closeBtn.addEventListener("click", (e) => {
     createChannelModal.style.display = "none";
     addStampModal.style.display = "none";
+    searchModal.style.display = "none";
+    container.style.top = "38px";
   });
 });
 
 // モーダルの外側をクリックするとモーダルが消える
 window.addEventListener("click", (e) => {
-  if (e.target === createChannelModal) {
-    createChannelModal.style.display = "none";
-  } else if (e.target === addStampModal) {
-    addStampModal.style.display = "none";
+  switch (e.target) {
+    case createChannelModal:
+      createChannelModal.style.display = "none";
+      break;
+    case addStampModal:
+      addStampModal.style.display = "none";
+      break;
+    case searchModal:
+      searchModal.style.display = "none";
+      container.style.top = "38px";
+      break;
   }
 });
 
@@ -191,10 +268,11 @@ document.getElementById("form-channel").addEventListener("submit", (e) => {
 socket.on("create channel", (channelId, channelName) => {
   const li = document.createElement("li");
   li.className = "channel";
-  li.id = `channel${channelId}`;
+  li.dataset.channelId = channelId;
   li.innerHTML = `<span># ${channelName}</span>`;
   addEventToChannel(li);
   document.querySelector(".channel-list").insertBefore(li, createChannelBtn);
+  appendRoomOption(channelId, channelName, /*isChannel=*/ true);
   createChannelModal.style.display = "none";
 });
 
@@ -222,10 +300,8 @@ form.addEventListener("submit", (e) => {
     if (messageContent.length > 255) {
       alert("255文字より小さくしてください。");
     } else if (messageContent) {
-      const selectedElement = document.querySelector(".selected").id;
-      if (selectedElement.includes("user")) {
-        // 例user2 -> 2
-        const userId = selectedElement.split("user")[1];
+      const userId = document.querySelector(".selected").dataset.userId;
+      if (userId) {
         socket.emit("private message", messageContent, userId);
       } else {
         socket.emit("chat message", messageContent);
@@ -236,8 +312,9 @@ form.addEventListener("submit", (e) => {
 });
 
 // メッセージを表示
-socket.on("chat message", (message, username, messageId) => {
-  appendMessage(message, username, messageId);
+socket.on("chat message", (message, username) => {
+  console.log(message);
+  appendMessage(message.content, username, message.id, message.created_at);
 });
 
 form.addEventListener("submit", (e) => {

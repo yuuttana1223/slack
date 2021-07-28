@@ -14,13 +14,18 @@
     <title>Slack</title>
   </head>
   <body>
+    <header>
+      <div class="search">
+        <button class="search-btn"><i class="fas fa-search"></i>検索</button>
+      </div>
+    </header>
     <main>
       <div class="container">
         <div class="sidebar">
           <p class="channel-title"><span>チャンネル</span></p>
           <ul class="channel-list">
             <% channels.forEach(channel => { %>
-            <li class="channel" id="channel<%= channel.id %>">
+            <li class="channel" data-channel-id="<%= channel.id %>">
               <span># <%= channel.name %></span>
             </li>
             <% }) %>
@@ -30,11 +35,11 @@
           </ul>
           <p><span>ダイレクトメッセージ</span></p>
           <ul class="users">
-            <li class="user" id="user<%= locals.userId %>">
+            <li class="user" data-user-id="<%= locals.userId %>">
               <span id="current-username"><%= locals.username %> (自分)</span>
             </li>
             <% users.forEach(user => { %>
-            <li class="user" id="user<%= user.id %>">
+            <li class="user" data-user-id="<%= user.id %>">
               <span><%= user.name %></span>
             </li>
             <% }) %>
@@ -51,9 +56,7 @@
           </form>
         </div>
 
-        <!-- モーダルの外側(モーダル以外のすべて) -->
         <div id="modal1" class="modal">
-          <!-- チャンネル作成の内容 -->
           <div class="modal-content">
             <span class="close">&times;</span>
             <form id="form-channel">
@@ -78,7 +81,6 @@
                 src="https://a.slack-edge.com/production-standard-emoji-assets/13.0/apple-small/1f44d.png"
                 alt="good"
               />
-
               <img
                 src="https://a.slack-edge.com/production-standard-emoji-assets/13.0/apple-small/2705.png"
                 alt="check"
@@ -92,6 +94,42 @@
                 alt="zenno"
               />
             </div>
+          </div>
+        </div>
+        <div id="modal3" class="modal">
+          <div class="modal-content">
+            <div class="search-input">
+              <label for="input" class="fas fa-search"></label>
+              <input
+                id="input"
+                list="rooms"
+                type="text"
+                placeholder="例、#channel, @user"
+                autocomplete="off"
+              />
+              <datalist id="rooms">
+                <div class="select-channels">
+                  <% channels.forEach(channel => { %>
+                  <option
+                    class="room"
+                    data-channel-id="<%= channel.id %> "
+                    value="#<%= channel.name %>"
+                  ></option>
+                  <% }) %>
+                </div>
+                <div class="select-users">
+                  <% users.forEach(user => { %>
+                  <option
+                    class="room"
+                    data-user-id="<%= user.id %> "
+                    value="@<%= user.name %>"
+                  ></option>
+                  <% }) %>
+                </div>
+              </datalist>
+              <span class="close">&times;</span>
+            </div>
+            <br />
           </div>
         </div>
       </div>

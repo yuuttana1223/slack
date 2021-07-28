@@ -181,7 +181,7 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   const { username, userId } = socket.request.session;
   const messagesJoinUsersSql =
-    "SELECT messages.id, content, name FROM messages INNER JOIN users ON messages.user_id = users.id WHERE channel_id = ?;";
+    "SELECT messages.id, content, name, DATE_FORMAT(messages.created_at, '%Y-%m-%d %H:%i') AS created_at FROM messages INNER JOIN users ON messages.user_id = users.id WHERE channel_id = ?;";
 
   const changeSocketRoom = (room) => {
     socket.leave(socket.channelId);
@@ -230,7 +230,7 @@ io.on("connection", (socket) => {
     changeSocketRoom(`${smallerNum} ${largerNum}`);
 
     connection.execute(
-      "SELECT messages.id, content, name FROM messages INNER JOIN users ON messages.user_id = users.id WHERE (user_id = ? AND recipient_id = ?) OR (user_id = ? AND recipient_id = ?) ORDER BY messages.id ASC;",
+      "SELECT messages.id, content, name, DATE_FORMAT(messages.created_at, '%Y-%m-%d %H:%i') AS created_at FROM messages INNER JOIN users ON messages.user_id = users.id WHERE (user_id = ? AND recipient_id = ?) OR (user_id = ? AND recipient_id = ?) ORDER BY messages.id ASC;",
       [userId, recipientId, recipientId, userId],
       (error, results) => {
         if (error) {
@@ -260,8 +260,6 @@ io.on("connection", (socket) => {
     );
   });
 
-  // socket.on("disconnect", () => {});
-
   socket.on("submit image", (imageData) => {
     socket.broadcast
       .to(socket.channelId)
@@ -277,11 +275,16 @@ io.on("connection", (socket) => {
         if (error) {
           console.log(error);
         } else {
-          io.to(socket.channelId).emit(
-            "chat message",
-            message,
-            username,
-            result.insertId
+          connection.execute(
+            "SELECT id, content, DATE_FORMAT(messages.created_at, '%Y-%m-%d %H:%i') AS created_at FROM messages WHERE id = ?",
+            [result.insertId],
+            (error, results) => {
+              io.to(socket.channelId).emit(
+                "chat message",
+                results[0],
+                username
+              );
+            }
           );
         }
       }
@@ -296,11 +299,16 @@ io.on("connection", (socket) => {
         if (error) {
           console.log(error);
         } else {
-          io.to(socket.channelId).emit(
-            "chat message",
-            message,
-            username,
-            result.insertId
+          connection.execute(
+            "SELECT id, content, DATE_FORMAT(messages.created_at, '%Y-%m-%d %H:%i') AS created_at from messages WHERE id = ?",
+            [result.insertId],
+            (error, results) => {
+              io.to(socket.channelId).emit(
+                "chat message",
+                results[0],
+                username
+              );
+            }
           );
         }
       }

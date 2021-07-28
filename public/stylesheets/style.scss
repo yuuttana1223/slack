@@ -4,9 +4,38 @@
   box-sizing: border-box;
 }
 
-// top.ejs
+header {
+  position: fixed;
+  z-index: 1;
+  width: 100vw;
+  height: 38px;
+  background-color: #350d36;
+  div {
+    height: 28px;
+    text-align: center;
+    button {
+      height: 24px;
+      width: 40vw;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: rgb(255, 255, 255);
+      margin: 7px 0px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.23);
+      }
+      i {
+        margin-right: 1em;
+      }
+    }
+  }
+}
+
 .container {
   display: flex;
+  position: relative;
+  top: 38px;
   height: 100%;
   .sidebar {
     width: 25%;
@@ -88,6 +117,11 @@
             }
           }
         }
+        time {
+          margin-left: 10px;
+          font-size: 0.9em;
+          font-weight: lighter;
+        }
         img {
           margin-left: 10px;
           height: 18px;
@@ -119,6 +153,7 @@
       }
     }
   }
+
   .modal {
     display: none;
     position: fixed;
@@ -129,9 +164,73 @@
     background-color: rgb(0, 0, 0);
     background-color: rgba(0, 0, 0, 0.4);
 
-    &:last-of-type {
+    &#modal1 {
+      form {
+        text-align: left;
+        input {
+          width: 100%;
+          outline: none;
+          margin-top: 5px;
+          border-radius: 5px;
+          padding: 10px;
+        }
+        .submit-btn {
+          text-align: right;
+          button {
+            text-align: right;
+            border-radius: 5px;
+            padding: 5px 20px;
+            margin-top: 5px;
+            cursor: pointer;
+            background-color: rgb(221, 221, 221);
+          }
+        }
+      }
+    }
+
+    &#modal2 {
       .modal-content {
         width: 20%;
+        .stamp {
+          text-align: left;
+          img {
+            height: 30px;
+            margin: 10px;
+            cursor: pointer;
+            &:hover {
+              background-color: rgba(155, 223, 88, 0.7);
+            }
+          }
+        }
+      }
+    }
+
+    &#modal3 {
+      .modal-content {
+        width: 50%;
+        z-index: 2;
+        margin-top: 0;
+        top: 0;
+        padding: 0 0 0 30px;
+        text-align: left;
+        .search-input {
+          display: flex;
+          justify-content: space-between;
+          label {
+            line-height: 38px;
+          }
+          input {
+            border: none;
+            outline: none;
+            width: 95%;
+            height: 38px;
+            padding: 5px 15px;
+          }
+          datalist {
+            width: 100%;
+            background-color: white;
+          }
+        }
       }
     }
 
@@ -154,38 +253,6 @@
           color: black;
           text-decoration: none;
           cursor: pointer;
-        }
-      }
-      form {
-        text-align: left;
-        input {
-          width: 100%;
-          outline: none;
-          margin-top: 5px;
-          border-radius: 5px;
-          padding: 10px;
-        }
-        .submit-btn {
-          text-align: right;
-          button {
-            text-align: right;
-            border-radius: 5px;
-            padding: 5px 20px;
-            margin-top: 5px;
-            cursor: pointer;
-            background-color: rgb(221, 221, 221);
-          }
-        }
-      }
-      .stamp {
-        text-align: left;
-        img {
-          height: 30px;
-          margin: 10px;
-          cursor: pointer;
-          &:hover {
-            background-color: rgba(155, 223, 88, 0.7);
-          }
         }
       }
     }
