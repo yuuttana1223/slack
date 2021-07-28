@@ -313,7 +313,6 @@ form.addEventListener("submit", (e) => {
 
 // メッセージを表示
 socket.on("chat message", (message, username) => {
-  console.log(message);
   appendMessage(message.content, username, message.id, message.created_at);
 });
 
